@@ -1,9 +1,13 @@
 import * as vscode from "vscode";
 import { detectConvexProject } from "./config";
-import { clearProjectCache } from "./resolver/pathResolver";
+import {
+  clearProjectCache,
+  isConvexBackendFile,
+} from "./resolver/pathResolver";
 import {
   ConvexReferenceProvider,
   findConvexUsagesCommand,
+  findAllReferencesCommand,
 } from "./providers/referenceProvider";
 import { ConvexHoverProvider } from "./providers/hoverProvider";
 
@@ -65,7 +69,40 @@ export async function activate(
       findConvexUsagesCommand,
     ),
   );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "convexNavigator.findAllReferences",
+      findAllReferencesCommand,
+    ),
+  );
   outputChannel.appendLine("Commands registered");
+
+  // Set context for when cursor is in a Convex backend file
+  // This enables the Shift+F12 keybinding override
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(async (editor) => {
+      if (editor) {
+        const isConvex = await isConvexBackendFile(editor.document.uri.fsPath);
+        await vscode.commands.executeCommand(
+          "setContext",
+          "convexNavigator.isConvexFile",
+          isConvex,
+        );
+      }
+    }),
+  );
+
+  // Set initial context for current editor
+  if (vscode.window.activeTextEditor) {
+    const isConvex = await isConvexBackendFile(
+      vscode.window.activeTextEditor.document.uri.fsPath,
+    );
+    await vscode.commands.executeCommand(
+      "setContext",
+      "convexNavigator.isConvexFile",
+      isConvex,
+    );
+  }
 
   // Watch for configuration changes
   context.subscriptions.push(

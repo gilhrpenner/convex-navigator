@@ -3,10 +3,10 @@
   "displayName": "Convex Navigator",
   "description": "Navigate between Convex backend functions and their frontend usages. Find all references from backend to frontend code.",
   "version": "0.1.0",
-  "publisher": "your-publisher-name",
+  "publisher": "GilPenner",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/convex-navigator"
+    "url": "https://github.com/gilhrpenner/convex-navigator"
   },
   "license": "MIT",
   "engines": {
@@ -37,6 +37,11 @@
         "category": "Convex Navigator"
       },
       {
+        "command": "convexNavigator.findAllReferences",
+        "title": "Find All References (Convex)",
+        "category": "Convex Navigator"
+      },
+      {
         "command": "convexNavigator.goToDefinition",
         "title": "Go to Convex Definition",
         "category": "Convex Navigator"
@@ -57,6 +62,12 @@
         "key": "ctrl+shift+u",
         "mac": "cmd+shift+u",
         "when": "editorTextFocus && resourceExtname =~ /\\.(ts|tsx|js|jsx)$/"
+      },
+      {
+        "command": "convexNavigator.findAllReferences",
+        "key": "shift+f12",
+        "mac": "shift+f12",
+        "when": "editorTextFocus && convexNavigator.isConvexFile"
       }
     ],
     "configuration": {

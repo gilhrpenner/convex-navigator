@@ -228,12 +228,16 @@ async function fallbackSearch(
 /**
  * VS Code Reference Provider implementation
  * Provides references for Convex function definitions
+ *
+ * This integrates with VS Code's native "Find All References" (Shift+F12)
+ * When the cursor is on a Convex function definition, this provider
+ * returns all frontend usages of that function.
  */
 export class ConvexReferenceProvider implements vscode.ReferenceProvider {
   async provideReferences(
     document: vscode.TextDocument,
     position: vscode.Position,
-    _context: vscode.ReferenceContext,
+    context: vscode.ReferenceContext,
     token: vscode.CancellationToken,
   ): Promise<vscode.Location[] | null> {
     // Check if this is a Convex function definition
@@ -271,6 +275,20 @@ export class ConvexReferenceProvider implements vscode.ReferenceProvider {
       return new vscode.Location(uri, range);
     });
 
+    // Include the definition itself if requested (for "Find All References")
+    if (context.includeDeclaration) {
+      const definitionLocation = new vscode.Location(
+        document.uri,
+        new vscode.Range(
+          convexFunction.line,
+          convexFunction.column,
+          convexFunction.line,
+          convexFunction.column + convexFunction.name.length,
+        ),
+      );
+      locations.unshift(definitionLocation);
+    }
+
     return locations;
   }
 }
@@ -305,7 +323,7 @@ export async function findConvexUsagesCommand(): Promise<void> {
       title: `Finding usages of ${convexFunction.name}...`,
       cancellable: true,
     },
-    async (progress, token) => {
+    async (_progress, token) => {
       const result = await searchForUsages(
         convexFunction.apiPath,
         convexFunction.name,
@@ -344,6 +362,92 @@ export async function findConvexUsagesCommand(): Promise<void> {
 
       vscode.window.showInformationMessage(
         `Found ${result.usages.length} usage(s) of ${convexFunction.name} (${result.searchTimeMs}ms)`,
+      );
+    },
+  );
+}
+
+/**
+ * Command handler for "Find All References" (Shift+F12 override)
+ * This is triggered when Shift+F12 is pressed in a Convex backend file.
+ * It first tries to find Convex usages, and if not on a Convex function,
+ * falls back to the default "Find All References" behavior.
+ */
+export async function findAllReferencesCommand(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    // Fall back to default
+    await vscode.commands.executeCommand(
+      "editor.action.referenceSearch.trigger",
+    );
+    return;
+  }
+
+  const position = editor.selection.active;
+  const convexFunction = await findConvexFunctionAtPosition(
+    editor.document,
+    position,
+  );
+
+  if (!convexFunction) {
+    // Not on a Convex function, fall back to default Find All References
+    await vscode.commands.executeCommand(
+      "editor.action.referenceSearch.trigger",
+    );
+    return;
+  }
+
+  // Found a Convex function, search for usages
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: `Finding references to ${convexFunction.name}...`,
+      cancellable: true,
+    },
+    async (_progress, token) => {
+      const result = await searchForUsages(
+        convexFunction.apiPath,
+        convexFunction.name,
+      );
+
+      if (token.isCancellationRequested) {
+        return;
+      }
+
+      // Build locations array - include definition first
+      const locations: vscode.Location[] = [];
+
+      // Add the definition itself
+      locations.push(
+        new vscode.Location(
+          editor.document.uri,
+          new vscode.Range(
+            convexFunction.line,
+            convexFunction.column,
+            convexFunction.line,
+            convexFunction.column + convexFunction.name.length,
+          ),
+        ),
+      );
+
+      // Add all usages
+      for (const usage of result.usages) {
+        const uri = vscode.Uri.file(usage.filePath);
+        const range = new vscode.Range(
+          usage.line,
+          usage.column,
+          usage.line,
+          usage.column + convexFunction.apiPath.length,
+        );
+        locations.push(new vscode.Location(uri, range));
+      }
+
+      // Show in the references panel (same as native Find All References)
+      await vscode.commands.executeCommand(
+        "editor.action.showReferences",
+        editor.document.uri,
+        position,
+        locations,
       );
     },
   );

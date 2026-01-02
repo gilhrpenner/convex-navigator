@@ -12,7 +12,9 @@ When working with [Convex](https://convex.dev/), VS Code's native "Find All Refe
 - Backend functions are exported like: `export const createContact = mutation({...})`
 - Frontend code accesses them via: `useMutation(api.domains.contacts.createContact)`
 
-TypeScript sees no direct connection between these two - the `api` object is auto-generated and the path is resolved at runtime. This makes navigation between backend and frontend code frustrating.
+The frontend doesn't directly import `createContact` from your backend file. Instead, it imports from the auto-generated `_generated/api` module, which re-exports all your functions. TypeScript sees `api.domains.contacts.createContact` as a completely different symbol than your `export const createContact` - there's no direct reference between them.
+
+This means when you're in your backend code and want to find where `createContact` is used in the frontend, "Find All References" returns nothing.
 
 **Convex Navigator solves this problem.**
 
@@ -478,80 +480,6 @@ Configure:
 
 Contributions are welcome! Please feel free to submit issues and pull requests.
 
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/your-username/convex-navigator.git
-cd convex-navigator
-
-# Install dependencies
-npm install
-
-# Compile TypeScript
-npm run compile
-
-# Watch mode (auto-compile on changes)
-npm run watch
-
-# Run linting
-npm run lint
-
-# Package the extension
-npm run package
-```
-
-### Testing the Extension
-
-1. Open the project in VS Code
-2. Press `F5` to launch the Extension Development Host
-3. Open a Convex project in the new VS Code window
-4. Test the features
-
-### Project Structure
-
-```
-convex-navigator/
-├── src/
-│   ├── extension.ts           # Main entry point
-│   ├── config.ts              # Configuration handling
-│   ├── types.ts               # TypeScript interfaces
-│   ├── providers/
-│   │   ├── referenceProvider.ts   # Find usages functionality
-│   │   └── hoverProvider.ts       # Hover information
-│   └── resolver/
-│       ├── pathResolver.ts        # API path <-> file path conversion
-│       └── functionDetector.ts    # Detect Convex function exports
-├── package.json               # Extension manifest
-├── tsconfig.json              # TypeScript configuration
-└── README.md
-```
-
-### Submitting Changes
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make your changes
-4. Run linting: `npm run lint`
-5. Compile: `npm run compile`
-6. Test manually with F5
-7. Commit: `git commit -m "feat: add my feature"`
-8. Push: `git push origin feature/my-feature`
-9. Open a Pull Request
-
----
-
-## Roadmap
-
-Future improvements under consideration:
-
-- [ ] **Go to Definition** (Frontend -> Backend): Click on `api.X.Y.Z` to jump to implementation
-- [ ] **CodeLens**: Show usage count above function definitions
-- [ ] **AST-based search**: More accurate detection using TypeScript compiler
-- [ ] **Internal API support**: Support for `internal.X.Y.Z` patterns
-- [ ] **Rename support**: Rename function and update all usages
-- [ ] **Diagnostics**: Warn about unused Convex functions
-
 ---
 
 ## Requirements
@@ -576,4 +504,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**Disclaimer**: This extension is not officially affiliated with Convex, Inc. It is a community-built tool to improve the developer experience.
+**Disclaimer**: This extension is not officially affiliated with Convex. It is a community-built tool to improve the developer experience.
