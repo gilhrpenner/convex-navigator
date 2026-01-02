@@ -1,0 +1,133 @@
+{
+  "name": "convex-navigator",
+  "displayName": "Convex Navigator",
+  "description": "Navigate between Convex backend functions and their frontend usages. Find all references from backend to frontend code.",
+  "version": "0.1.0",
+  "publisher": "your-publisher-name",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/convex-navigator"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "convex",
+    "navigation",
+    "references",
+    "backend",
+    "frontend",
+    "typescript"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/convex.config.ts",
+    "workspaceContains:**/convex/_generated/api.ts"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "convexNavigator.findUsages",
+        "title": "Find Convex Usages",
+        "category": "Convex Navigator"
+      },
+      {
+        "command": "convexNavigator.goToDefinition",
+        "title": "Go to Convex Definition",
+        "category": "Convex Navigator"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "convexNavigator.findUsages",
+          "when": "editorTextFocus && resourceExtname =~ /\\.(ts|tsx|js|jsx)$/",
+          "group": "navigation@1"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "convexNavigator.findUsages",
+        "key": "ctrl+shift+u",
+        "mac": "cmd+shift+u",
+        "when": "editorTextFocus && resourceExtname =~ /\\.(ts|tsx|js|jsx)$/"
+      }
+    ],
+    "configuration": {
+      "title": "Convex Navigator",
+      "properties": {
+        "convexNavigator.convexPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the Convex directory relative to workspace root. Leave empty for auto-detection."
+        },
+        "convexNavigator.frontendPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Paths to frontend directories to search for usages. Leave empty to search entire workspace."
+        },
+        "convexNavigator.customWrappers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Custom function wrapper names to detect as Convex functions (e.g., 'authedQuery', 'authedMutation')."
+        },
+        "convexNavigator.apiImportPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "api",
+            "internal"
+          ],
+          "description": "API object names to search for (e.g., 'api' from convex imports)."
+        },
+        "convexNavigator.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/_generated/**",
+            "**/dist/**",
+            "**/out/**",
+            "**/.git/**"
+          ],
+          "description": "Glob patterns to exclude from search."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vscode/vsce": "^2.22.0",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.0"
+  }
+}
