@@ -2,7 +2,7 @@
   "name": "convex-navigator",
   "displayName": "Convex Navigator",
   "description": "Navigate between Convex backend functions and their frontend usages. Find all references from backend to frontend code.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "GilPenner",
   "icon": "icon.png",
   "repository": {

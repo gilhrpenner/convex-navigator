@@ -5,6 +5,14 @@ All notable changes to the "Convex Navigator" extension will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2025-01-02
+
+### Fixed
+
+- Fixed "Cursor is not on a Convex function definition" error when using "Find Convex Usages"
+- Improved function detection to work when cursor is anywhere within a function body, not just on the export line
+- Function detection now uses three strategies: exact line match, word under cursor match, and function body detection
+
 ## [0.1.1] - 2025-01-02
 
 ### Added
